@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Computer Science Quiz</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#0a0a0a;
+  --ink:#f4f4f4;
+  --muted:rgba(244,244,244,.45);
+  --paper:#0f0f0f;
+  --line:rgba(255,255,255,.1);
+  --brand:#b6ff00;
+  --brand-dark:#b6ff00;
+  --brand-soft:rgba(182,255,0,.12);
+  --accent:#b6ff00;
+  --accent-soft:rgba(182,255,0,.1);
+  --accent-ink:#0a0a0a;
+  --shadow:0 18px 40px rgba(0,0,0,.42),0 60px 120px rgba(0,0,0,.38);
+  --card-shadow:0 30px 80px rgba(0,0,0,.45),0 90px 180px rgba(0,0,0,.42);
+  --radius:0px;
+  --spring:cubic-bezier(.175,.885,.32,1.275);
+}
+html{
+  background:var(--bg);
+  min-height:100%;
+  scroll-behavior:smooth;
+}
+body{
+  min-height:100%;
+  margin:0;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px),
+    linear-gradient(180deg,rgba(255,255,255,.035) 1px,transparent 1px),
+    radial-gradient(circle at 50% -10%,rgba(182,255,0,.075),transparent 36%),
+    #0a0a0a;
+  background-size:44px 44px;
+  color:var(--ink);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.4;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background:linear-gradient(180deg,rgba(10,10,10,0) 0%,rgba(10,10,10,.7) 100%);
+}
+button{font:inherit}
+.skip-link{
+  position:absolute;
+  left:1rem;
+  top:.75rem;
+  z-index:20;
+  transform:translateY(-140%);
+  background:var(--ink);
+  color:#0a0a0a;
+  padding:.75rem 1rem;
+}
+.skip-link:focus{transform:none}
+#app{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:480px;
+  margin:0 auto;
+  padding:16px;
+  display:flex;
+  align-items:stretch;
+}
+.screen{
+  display:none;
+  width:100%;
+  animation:fadeUp .26s ease-out both;
+}
+.screen.active{display:flex;flex-direction:column}
+@keyframes fadeUp{from{opacity:.001;transform:translateY(8px)}to{opacity:1;transform:none}}
+.app-panel{
+  width:100%;
+  min-height:calc(100svh - 32px);
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid var(--line);
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.brand-mark{
+  width:34px;
+  height:34px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  display:grid;
+  place-items:center;
+  background:transparent;
+  color:var(--ink);
+  font-size:.7rem;
+  font-weight:900;
+}
+.brand-text{min-width:0}
+.eyebrow,.question-label,.module-icon,.module-count,.ring-pct-label,.rp-label{
+  color:var(--brand);
+  font-size:.72rem;
+  font-weight:900;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+.brand-title{
+  margin:0;
+  color:var(--ink);
+  font-size:.84rem;
+  letter-spacing:.02em;
+  text-transform:uppercase;
+  font-weight:900;
+}
+.hero{
+  display:grid;
+  gap:16px;
+  padding:16px 0;
+}
+.hero h1{
+  color:var(--ink);
+  font-size:clamp(2.5rem,11vw,3.8rem);
+  line-height:1.1;
+  letter-spacing:-.04em;
+  text-transform:uppercase;
+  font-weight:950;
+}
+.hero p{
+  color:var(--muted);
+  font-size:1.02rem;
+  line-height:1.45;
+}
+.hero-actions,.results-actions,.quiz-actions{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  width:100%;
+}
+.btn,.mini-btn{
+  min-height:50px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:12px 18px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  cursor:pointer;
+  font-weight:900;
+  text-decoration:none;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-size:.76rem;
+  background:transparent;
+  color:var(--ink);
+  -webkit-tap-highlight-color:transparent;
+  transition:background .22s ease,border-color .22s ease,color .22s ease;
+}
+.btn-primary:hover, .mini-btn:hover{
+  background:var(--brand);
+  border-color:var(--brand);
+  color:#0a0a0a;
+}
+.stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  border-top:1px solid var(--line);
+  padding-top:16px;
+}
+.stat{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.025);
+  padding:14px 4px;
+  text-align:center;
+}
+.stat strong{display:block;font-size:1.75rem;line-height:1;font-weight:950;}
+.stat span{display:block;margin-top:6px;color:var(--muted);font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;}
+
+.credits-footer {
+  margin-top: auto;
+  padding: 24px 0 4px;
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: rgba(244, 244, 244, 0.25);
+  text-transform: uppercase;
+  text-align: center;
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.section-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.section-head h2,.result-copy h2{
+  margin:0;
+  color:var(--ink);
+  font-size:2.2rem;
+  line-height:1.1;
+  letter-spacing:-.03em;
+  text-transform:uppercase;
+  font-weight:950;
+}
+.section-head p,.result-copy p{margin:0;color:var(--muted);font-size:1rem}
+.sets-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:14px;
+  padding-bottom:32px;
+}
+.module-card{
+  width:100%;
+  min-height:160px;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.018);
+  color:var(--ink);
+  padding:24px;
+  cursor:pointer;
+  text-align:left;
+  overflow:hidden;
+  transition:background .25s ease,border-color .25s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.module-card:hover{
+  background:#f4f4f4;
+  color:#0a0a0a;
+  border-color:rgba(255,255,255,.3);
+}
+.module-card:hover .module-desc,
+.module-card:hover .module-count,
+.module-card:hover .module-icon,
+.module-card:hover .arrow{
+  color:#0a0a0a;
+}
+.module-card.featured{
+  background:rgba(182,255,0,.07);
+  border-color:rgba(182,255,0,.3);
+}
+.module-icon{
+  width:max-content;
+  background:transparent;
+  color:var(--brand);
+  font-size:.72rem;
+  letter-spacing:.14em;
+  font-weight:900;
+  text-transform:uppercase;
+}
+.module-title{display:block;margin:6px 0 0;font-size:1.5rem;line-height:1.1;letter-spacing:-.03em;text-transform:uppercase;font-weight:950}
+.module-desc{display:block;margin:6px 0 0;color:var(--muted);font-size:.9rem}
+.module-count{display:block;width:max-content;margin-top:12px;color:var(--brand);font-size:.72rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.arrow{font-size:1.45rem;color:var(--brand);position:absolute;bottom:22px;right:24px}
+.quiz-shell{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  padding-bottom:18px;
+}
+.quiz-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.mini-btn{
+  min-height:44px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:transparent;
+  color:var(--ink);
+  padding:9px 16px;
+  font-weight:800;
+  cursor:pointer;
+  text-transform:uppercase;
+  font-size:0.72rem;
+  letter-spacing:0.06em;
+}
+.mini-btn:hover{background:var(--brand);border-color:var(--brand);color:#0a0a0a}
+.score-chip{
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:transparent;
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:9px 16px;
+  color:var(--muted);
+  font-weight:800;
+  font-size:.75rem;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+}
+.score-chip b{color:var(--ink);font-size:1rem}
+.progress-meta{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  color:var(--muted);
+  font-size:.75rem;
+  font-weight:800;
+  text-transform:uppercase;
+  padding:8px 0;
+}
+.progress-track{
+  height:1px;
+  background:var(--line);
+}
+.progress-fill{
+  width:0%;
+  height:100%;
+  background:var(--brand);
+  box-shadow:0 0 18px rgba(182,255,0,.55);
+  transition:width .25s ease;
+}
+.card-stage{
+  display:grid;
+  gap:16px;
+  padding:16px 0;
+}
+.question-card,.answer-card,.result-card{
+  background:#0d0d0d;
+  border:1px solid var(--line);
+}
+.question-card{
+  position:relative;
+  overflow:hidden;
+  min-height:340px;
+  padding:24px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  background:#0d0d0d;
+  box-shadow:var(--card-shadow);
+  transition:border-color .2s ease,background .25s ease;
+}
+.question-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,transparent 0%,rgba(244,244,244,.05) 42%,transparent 58%);
+}
+.question-card.is-correct{
+  border-color:#26795b;
+  background:radial-gradient(circle at 50% 0%,rgba(38,121,91,.15),transparent 50%),#0d0d0d!important;
+  animation:cardPop .34s ease both;
+}
+.question-card.is-wrong{
+  border-color:#b94a3b;
+  background:radial-gradient(circle at 50% 0%,rgba(185,74,59,.15),transparent 50%),#0d0d0d!important;
+  animation:cardShake .3s ease both;
+}
+.question-card.is-changing{animation:cardSlide .24s ease both}
+.question-card > *{position:relative;z-index:1}
+.question-card h2{
+  margin:24px 0;
+  font-size:1.8rem;
+  line-height:1.2;
+  letter-spacing:-.03em;
+  text-transform:uppercase;
+  font-weight:950;
+}
+.question-label{
+  width:max-content;
+  color:var(--brand);
+  font-size:.72rem;
+  font-weight:900;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+}
+.choices{
+  display:grid;
+  gap:10px;
+}
+.choice-btn{
+  width:100%;
+  min-height:54px;
+  display:grid;
+  grid-template-columns:30px 1fr;
+  align-items:center;
+  gap:12px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:transparent;
+  color:var(--ink);
+  padding:10px 16px;
+  text-align:left;
+  cursor:pointer;
+  font-weight:850;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  font-size:.8rem;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .16s ease,border-color .16s ease,color .16s ease;
+}
+.choice-btn:hover:not(:disabled){
+  background:var(--brand);
+  color:#0a0a0a;
+  border-color:var(--brand);
+}
+.choice-btn:hover:not(:disabled) .choice-letter{
+  background:#0a0a0a;
+  color:var(--brand);
+}
+.choice-btn:disabled{cursor:default}
+.choice-letter{
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:rgba(255,255,255,.08);
+  color:var(--ink);
+  font-weight:900;
+  font-size:.75rem;
+}
+.choice-btn.correct{
+  background:rgba(182,255,0,.15);
+  border-color:rgba(182,255,0,.55);
+  color:var(--ink);
+}
+.choice-btn.correct .choice-letter{background:var(--brand);color:#0a0a0a}
+.choice-btn.wrong{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(255,255,255,.24);
+  color:var(--ink);
+}
+.answer-card{
+  display:none;
+  padding:20px;
+  background:#0f0f0f;
+  border:1px solid var(--line);
+}
+.answer-card.visible{display:block;animation:answerReveal .28s ease both}
+.answer-card h3{margin:0 0 6px;font-size:1.2rem;text-transform:uppercase;font-weight:900}
+.answer-card p{margin:0;color:var(--muted);font-size:.95rem}
+.answer-status{
+  display:inline-flex;
+  align-items:center;
+  color:var(--brand);
+  font-weight:900;
+  font-size:.72rem;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.result-card{
+  padding:24px;
+  display:grid;
+  gap:20px;
+}
+.result-score{
+  width:140px;
+  height:140px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:conic-gradient(var(--brand) var(--score-angle),rgba(255,255,255,.12) 0);
+  margin:0 auto;
+}
+.result-score-inner{
+  width:112px;
+  height:112px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:#0a0a0a;
+  text-align:center;
+}
+.result-score strong{display:block;font-size:2rem;line-height:1;font-weight:950}
+.result-score span{display:block;color:var(--muted);font-size:.65rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+.result-pills{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.pill{
+  border:1px solid var(--line);
+  background:transparent;
+  padding:12px;
+  text-align:center;
+}
+.pill strong{display:block;font-size:1.5rem;font-weight:950}
+.pill span{display:block;color:var(--muted);font-weight:800;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em}
+.sr-live{
+  position:absolute;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+}
+
+/* ============================================================
+   RESPONSIVE MASK LAYERS (FIXES MOBILE CLUMPING & ROW WRAPS)
+============================================================ */
+.mask-line{
+  display:inline-block !important;
+  width:auto !important;
+  margin-right:0.25em !important;
+  vertical-align:top !important;
+  overflow:hidden !important;
+  line-height:1.2 !important;
+}
+.mask-line > span{
+  display:inline-block !important;
+  transform:translateY(110%);
+  transition:transform .75s cubic-bezier(.16,1,.3,1);
+  will-change:transform;
+}
+.in-view .mask-line > span, .mask-ready.in-view .mask-line > span{
+  transform:translateY(0);
+}
+.reveal{
+  opacity:1;
+  transform:none;
+}
+.module-card.reveal, .stat.reveal, .card-stage.reveal, .result-card.reveal{
+  opacity:0;
+  transform:translateY(24px);
+  transition:opacity .7s ease, transform .8s cubic-bezier(.16,1,.3,1);
+}
+.module-card.reveal.in-view, .stat.reveal.in-view, .card-stage.reveal.in-view, .result-card.reveal.in-view{
+  opacity:1;
+  transform:translateY(0);
+}
+
+@keyframes cardPop{50%{transform:translateY(-4px) scale(1.01)}}
+@keyframes cardShake{
+  20%{transform:translateX(-6px)}
+  45%{transform:translateX(6px)}
+  70%{transform:translateX(-2px)}
+}
+@keyframes cardSlide{from{opacity:.5;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes answerReveal{from{opacity:.001;transform:translateY(-6px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<main id="app">
+  <section id="welcome" class="screen active" aria-labelledby="welcomeTitle">
+    <div class="app-panel">
+      <header class="topbar reveal">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">CS</div>
+          <div class="brand-text">
+            <div class="eyebrow">Platform Core</div>
+            <p class="brand-title">Computer Science</p>
+          </div>
+        </div>
+      </header>
+      <div class="hero" id="main">
+        <h1 id="welcomeTitle" class="reveal">CS Quiz // 2026</h1>
+        <p class="reveal">Master core computer science tracks through high-speed, interactive concept checks.</p>
+        <div class="hero-actions reveal">
+          <button class="btn btn-primary" type="button" onclick="startRandomQuiz()">Random Topic</button>
+          <button class="btn btn-secondary" type="button" onclick="navTo('sets')">Choose Topic</button>
+        </div>
+      </div>
+      <div class="stats reveal" aria-label="Quiz summary">
+        <div class="stat"><strong>5</strong><span>Modules</span></div>
+        <div class="stat"><strong>10</strong><span>Questions Each</span></div>
+      </div>
+      <footer class="credits-footer reveal">
+        © 2026 // DEVELOPED BY SAHANWAJ &times; CO-DEVELOPED BY HRITIK
+      </footer>
+    </div>
+  </section>
+
+  <section id="sets" class="screen" aria-labelledby="setsTitle">
+    <div class="app-panel">
+      <header class="topbar reveal">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">CS</div>
+          <div class="brand-text">
+            <div class="eyebrow">Choose a topic</div>
+            <p class="brand-title">Computer Science</p>
+          </div>
+        </div>
+        <button class="mini-btn" type="button" onclick="navTo('welcome')">Home</button>
+      </header>
+      <div class="section-head reveal">
+        <div>
+          <h2 id="setsTitle">Pick a study card</h2>
+          <p>Each topic has 10 quick multiple-choice questions.</p>
+        </div>
+      </div>
+      <div class="sets-grid" id="setsGrid"></div>
+    </div>
+  </section>
+
+  <section id="quiz" class="screen" aria-labelledby="questionText">
+    <div class="app-panel quiz-shell">
+      <div class="quiz-top reveal">
+        <button class="mini-btn" type="button" onclick="navTo('sets')">Back</button>
+        <div class="score-chip" aria-live="polite">Score <b id="uiScore">0</b></div>
+      </div>
+      <div class="reveal">
+        <div class="progress-meta">
+          <span id="uiModuleName">Module</span>
+          <span id="uiProgressText">0 / 10</span>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-fill" id="uiProgressBar"></div>
+        </div>
+      </div>
+      <div class="card-stage reveal">
+        <article class="question-card" id="quizCard">
+          <div class="question-label" id="questionLabel">Question</div>
+          <h2 id="questionText"></h2>
+          <div class="choices" id="uiChoices"></div>
+        </article>
+        <aside class="answer-card" id="answerCard" aria-live="polite">
+          <div class="answer-status" id="uiBackLabel">Explanation</div>
+          <h3 id="uiBackAnswer"></h3>
+          <p id="uiBackExplain"></p>
+        </aside>
+      </div>
+      <div class="quiz-actions" id="uiControls" hidden>
+        <button class="btn btn-primary" id="btnNext" type="button" onclick="nextQuestion()">Next Question</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="results" class="screen" aria-labelledby="uiResultTitle">
+    <div class="app-panel">
+      <header class="topbar reveal">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">CS</div>
+          <div class="brand-text">
+            <div class="eyebrow">Quiz Complete</div>
+            <p class="brand-title">Computer Science</p>
+          </div>
+        </div>
+      </header>
+      <div class="result-card reveal">
+        <div class="result-score" id="resultScore" style="--score-angle:0deg">
+          <div class="result-score-inner">
+            <div>
+              <strong id="uiResultPct">0%</strong>
+              <span>Accuracy</span>
+            </div>
+          </div>
+        </div>
+        <div class="result-copy">
+          <h2 id="uiResultTitle">Great job</h2>
+          <p id="uiResultMsg"></p>
+        </div>
+        <div class="result-pills">
+          <div class="pill"><strong id="uiResultCorrect">0</strong><span>Correct</span></div>
+          <div class="pill"><strong id="uiResultWrong">0</strong><span>Incorrect</span></div>
+        </div>
+        <div class="results-actions">
+          <button class="btn btn-primary" type="button" onclick="retrySet()">Retry Module</button>
+          <button class="btn btn-secondary" type="button" onclick="navTo('sets')">Choose Another</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="sr-live" id="liveRegion" aria-live="polite"></div>
+
+<script>
+const SETS = [
+  { id: 1, icon: "CPU", title: "Hardware Systems", desc: "CPUs, RAM, and internal components.", questions: [
+    { q: "What does CPU stand for?", o:["Central Processing Unit","Computer Personal Unit","Core Power Unit","Central Program Unit"], a:0, e:"The CPU is the primary component of a computer that acts as its brain by executing instructions." },
+    { q: "Which part of a computer is used for short-term, temporary storage?", o:["Hard Drive","RAM","CPU","Motherboard"], a:1, e:"RAM (Random Access Memory) holds data temporarily for fast access by the CPU." },
+    { q: "Which of these is an input device?", o:["Monitor","Speaker","Keyboard","Printer"], a:2, e:"A keyboard is used to enter data into the computer, making it an input device." },
+    { q: "Which of these is an output device?", o:["Mouse","Microphone","Scanner","Monitor"], a:3, e:"A monitor displays information generated by the computer." },
+    { q: "What does GPU stand for?", o:["General Processing Unit","Graphics Processing Unit","Global Power Unit","Game Utility"], a:1, e:"A GPU handles complex mathematical calculations needed for rendering images and video." },
+    { q: "Where is data permanently stored?", o:["RAM","Cache","Hard Drive / SSD","Power Supply"], a:2, e:"Hard drives and SSDs are non-volatile storage, meaning they retain data when powered off." },
+    { q: "What is the main circuit board called?", o:["Motherboard","Daughterboard","Mainframe","Processor"], a:0, e:"The motherboard is the central printed circuit board that connects all major components." },
+    { q: "Which device is a peripheral?", o:["CPU","RAM","Printer","Motherboard"], a:2, e:"Peripherals are external devices connected to the computer, like printers or mice." },
+    { q: "What does SSD stand for?", o:["Solid State Drive","Super Speed Disk","Storage Device","System Drive"], a:0, e:"An SSD is a fast storage device that uses flash memory with no moving mechanical parts." },
+    { q: "What supplies electricity to components?", o:["CPU","Fan","Power Supply (PSU)","RAM"], a:2, e:"The PSU converts alternating current from the wall into direct current for internal components." }
+  ]},
+  { id: 2, icon: "WEB", title: "Internet & Web", desc: "Browsers, URLs, and networking fundamentals.", questions: [
+    { q: "What does URL stand for?", o:["Universal Routing Link","Uniform Resource Locator","User Reference Line","United Link"], a:1, e:"A URL is the standard web address used to locate a resource on the internet." },
+    { q: "Which of these is a web browser?", o:["Windows","Google Search","Chrome","Gmail"], a:2, e:"Chrome is a software application used to access and view websites." },
+    { q: "What does Wi-Fi do?", o:["Charges phones","Connects to internet wirelessly","Prints documents","Saves files"], a:1, e:"Wi-Fi uses radio waves to provide wireless high-speed internet and network connections." },
+    { q: "What does HTTP stand for?", o:["HyperText Transfer Protocol","High Tech Process","Home Transfer Path","Hyper Tool"], a:0, e:"HTTP is the foundation of data communication for the World Wide Web." },
+    { q: "What does the S in HTTPS mean?", o:["Standard","Simple","Secure","Server"], a:2, e:"HTTPS encrypts data between your browser and the website to protect against eavesdropping." },
+    { q: "Who develops the Safari browser?", o:["Microsoft","Google","Apple","Mozilla"], a:2, e:"Safari is the default web browser developed by Apple for macOS and iOS devices." },
+    { q: "What is a search engine?", o:["A physical device","A site to find information","A web browser","A virus"], a:1, e:"Search engines index the web to help you find specific information." },
+    { q: "What does www stand for?", o:["World Wide Web","Wireless Web","Web Window","World Web Watch"], a:0, e:"WWW represents the universe of network-accessible information." },
+    { q: "What does DNS do?", o:["Stores passwords","Translates names to IP addresses","Sends emails","Blocks ads"], a:1, e:"DNS acts like a phonebook, turning human-readable names into IP addresses." },
+    { q: "Which is a valid email format?", o:["www.user.com","user@example.com","http://user.com","user/example"], a:1, e:"Email addresses must use the username@domain standard." }
+  ]},
+  { id: 3, icon: "DATA", title: "Data & Storage", desc: "Bits, bytes, formats, and number systems.", questions: [
+    { q: "What is the smallest unit of data?", o:["Byte","Bit","Pixel","Megabyte"], a:1, e:"A bit is a binary digit, representing a logical state of either 0 or 1." },
+    { q: "How many bits are in a byte?", o:["4","8","16","32"], a:1, e:"One byte equals 8 bits, which historically was enough to encode a single character of text." },
+    { q: "Which is the largest unit of storage here?", o:["Kilobyte","Megabyte","Gigabyte","Terabyte"], a:3, e:"A terabyte is 1,024 gigabytes in binary storage measurement." },
+    { q: "Which is a common image file format?", o:[".mp3",".jpg",".txt",".exe"], a:1, e:"JPEG (.jpg) is a standard compression format for digital images." },
+    { q: "Which is a common audio file format?", o:[".docx",".mp3",".pdf",".html"], a:1, e:".mp3 is a widely used audio coding format for digital audio." },
+    { q: "What does a .pdf file represent?", o:["Video","Spreadsheet","Read-only Document","Program"], a:2, e:"PDF is used to present documents independent of software or operating system." },
+    { q: "Which number system do computers use natively?", o:["Decimal","Binary","Hexadecimal","Octal"], a:1, e:"Computers process instructions using binary, interpreting electrical signals as 0s and 1s." },
+    { q: "How many Megabytes are in a Gigabyte?", o:["10","100","1,024","10,000"], a:2, e:"In binary storage measurement, 1 GB is 1,024 MB." },
+    { q: "Which file extension is used for video?", o:[".mp4",".png",".csv",".zip"], a:0, e:".mp4 is a digital multimedia container format commonly used to store video." },
+    { q: "What is the purpose of a .zip file?", o:["Virus","Compressed folder","Music","Image"], a:1, e:"Zip files compress one or more files to reduce size and make them easier to transfer." }
+  ]},
+  { id: 4, icon: "CODE", title: "Logic & Code", desc: "Variables, algorithms, and core programming syntax.", questions: [
+    { q: "What is a variable in programming?", o:["A screen type","A named container for data","A broken code","A wire"], a:1, e:"Variables act as labeled storage locations in memory where programs can save and retrieve data." },
+    { q: "What is the purpose of a loop?", o:["Sleeping","Repeating code","Connecting Wi-Fi","Deleting files"], a:1, e:"Loops execute a block of code multiple times as long as a specified condition is met." },
+    { q: "What is a programming error called?", o:["Bug","Feature","Byte","Worm"], a:0, e:"A bug is a flaw in a computer program that produces an incorrect or unexpected result." },
+    { q: "What does an If/Else statement do?", o:["Shutdown","Make a decision","Download","Change color"], a:1, e:"It controls the flow of a program by running different code blocks based on a condition." },
+    { q: "What is an algorithm?", o:["Hardware","Step-by-step instructions","Virus","Language"], a:1, e:"An algorithm is a finite sequence of instructions used to solve a specific problem." },
+    { q: "What is a string data type?", o:["Text characters","A network cable","Math formula","Broken file"], a:0, e:"A string is a sequence of characters, typically used to represent text." },
+    { q: "What is a boolean value?", o:["Big number","File type","True or False value","Keyboard"], a:2, e:"Booleans are binary data types with only two possible values: true or false." },
+    { q: "What does syntax refer to?", o:["Speed","Grammar rules of a language","Price","Hardware"], a:1, e:"Syntax is the spelling and grammar rules that must be followed for code to run correctly." },
+    { q: "What is an array?", o:["Single number","Collection of items","Deleted file","Error"], a:1, e:"Arrays are data structures used to store multiple values in a single ordered variable." },
+    { q: "What is the purpose of a comment in code?", o:["Speed up PC","Notes for humans","Talk to PCs","Math"], a:1, e:"Comments explain code to humans; the computer ignores them when running the program." }
+  ]},
+  { id: 5, icon: "SAFE", title: "Cybersecurity", desc: "Encryption, malware, and digital safety.", questions: [
+    { q: "What is phishing?", o:["Catching bugs","Fake emails to steal data","Free music","Secure sending"], a:1, e:"Phishing is a social engineering attack where attackers impersonate trusted people or services to steal information." },
+    { q: "Which makes the strongest password?", o:["password123","Pet's name","Long mix of chars & symbols","Birthdate"], a:2, e:"Length and unpredictability drastically increase the time it takes to crack passwords." },
+    { q: "What is malware?", o:["Firewall","Malicious software","PC brand","Browser"], a:1, e:"Malware is a term for viruses, ransomware, spyware, and other harmful software." },
+    { q: "What is the primary benefit of 2FA?", o:["Doubles speed","Requires 2nd proof to login","2 passwords","Shares data"], a:1, e:"Two-factor authentication means a stolen password alone is not enough to log in." },
+    { q: "What does a VPN do?", o:["Creates an encrypted secure connection","Brightens screen","Stores files","Fixes keyboards"], a:0, e:"A Virtual Private Network masks your IP address and encrypts your internet traffic." },
+    { q: "What is the purpose of antivirus software?", o:["Speed up PC","Block and remove malware","Organize photos","Block ads"], a:1, e:"Antivirus software scans files and downloads to detect and remove known malware." },
+    { q: "What does a network firewall do?", o:["Stops overheating","Blocks unauthorized traffic","Deletes files","Boosts Wi-Fi"], a:1, e:"Firewalls monitor incoming and outgoing network traffic based on security rules." },
+    { q: "What does the padlock icon in a URL bar signify?", o:["Site closed","Connection is encrypted via HTTPS","Needs password","No downloads"], a:1, e:"The padlock shows that the connection is securely encrypted using HTTPS." },
+    { q: "Why is data backup critical?", o:["Free RAM","Protection against data loss","Faster net","Stop viruses"], a:1, e:"Backups help you recover files after hardware failure, accidental deletion, or ransomware." },
+    { q: "Why is it important to install software updates?", o:["Change colors","Patch security vulnerabilities","Slow PC","Delete apps"], a:1, e:"Updates often patch known vulnerabilities that attackers can exploit." }
+  ]}
+];
+
+const MODULE_THEMES = [
+  {accent:"#0357ff", soft:"#edf3ff", ink:"#001b58"},
+  {accent:"#b6ff00", soft:"rgba(182,255,0,0.1)", ink:"#fff"},
+  {accent:"#ff007a", soft:"#fff0f7", ink:"#58002a"},
+  {accent:"#00f0ff", soft:"#e6fcff", ink:"#005258"},
+  {accent:"#9d3042", soft:"#ffe8ee", ink:"#fffdf8"}
+];
+
+const STATE = { screen:"welcome", setId:null, qIdx:0, score:0, wrong:0, locked:false };
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      entry.target.classList.add("in-view");
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, {threshold:.05, rootMargin:"0px 0px -4% 0px"});
+
+function chunkWords(text, size = 1){
+  const words = text.trim().split(/\s+/);
+  const chunks = [];
+  for(let i = 0; i < words.length; i += size){
+    chunks.push(words.slice(i, i + size).join(" "));
+  }
+  return chunks.length ? chunks : [text];
+}
+
+function setMaskedText(el, text, chunkSize = 1){
+  if(!el) return;
+  el.textContent = "";
+  chunkWords(text, chunkSize).forEach((line, index) => {
+    const mask = document.createElement("span");
+    const inner = document.createElement("span");
+    mask.className = "mask-line";
+    inner.textContent = line;
+    inner.style.transitionDelay = `${index * 35}ms`;
+    mask.appendChild(inner);
+    el.appendChild(mask);
+  });
+  el.classList.add("mask-ready","reveal");
+}
+
+function prepareTextMasks(scope = document){
+  const targets = scope.querySelectorAll("h1, .section-head h2, .result-copy h2, .module-title");
+  targets.forEach(el => {
+    if(el.classList.contains("mask-ready")) return;
+    setMaskedText(el, el.textContent, 1);
+  });
+  scope.querySelectorAll(".stat").forEach((stat, index) => {
+    stat.classList.add("reveal");
+    stat.style.transitionDelay = `${index * 50}ms`;
+  });
+}
+
+function observeReveals(scope = document){
+  prepareTextMasks(scope);
+  scope.querySelectorAll(".reveal:not(.in-view)").forEach(el => revealObserver.observe(el));
+}
+
+function navTo(screenId){
+  document.querySelectorAll(".screen").forEach(screen => screen.classList.remove("active"));
+  const next = document.getElementById(screenId);
+  next.classList.add("active");
+  STATE.screen = screenId;
+  if(screenId === "sets") initSets();
+  observeReveals(next);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function initSets(){
+  const grid = document.getElementById("setsGrid");
+  grid.innerHTML = "";
+  SETS.forEach(set => {
+    const theme = MODULE_THEMES[(set.id - 1) % MODULE_THEMES.length];
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = set.id === 1 ? "module-card featured reveal" : "module-card reveal";
+    button.style.setProperty("--accent", theme.accent);
+    button.style.setProperty("--accent-soft", theme.soft);
+    button.style.setProperty("--accent-ink", theme.ink);
+    button.setAttribute("aria-label", `Start ${set.title}, ${set.questions.length} questions`);
+    button.innerHTML = `
+      <span class="module-icon" aria-hidden="true">${set.icon}</span>
+      <span>
+        <span class="module-title">${set.title}</span>
+        <span class="module-desc">${set.desc}</span>
+        <span class="module-count">${set.questions.length} questions</span>
+      </span>
+      <span class="arrow" aria-hidden="true">></span>
+    `;
+    button.addEventListener("click", () => startQuiz(set.id));
+    grid.appendChild(button);
+    revealObserver.observe(button);
+  });
+  prepareTextMasks(grid);
+  grid.querySelectorAll(".reveal").forEach(el => revealObserver.observe(el));
+}
+
+function startRandomQuiz() {
+  const randomSet = SETS[Math.floor(Math.random() * SETS.length)];
+  startQuiz(randomSet.id);
+}
+
+function startQuiz(id){
+  STATE.setId = id;
+  STATE.qIdx = 0;
+  STATE.score = 0;
+  STATE.wrong = 0;
+  loadQuestion();
+  navTo("quiz");
+}
+
+function currentSet(){
+  return SETS.find(set => set.id === STATE.setId);
+}
+
+function loadQuestion(){
+  STATE.locked = false;
+  const set = currentSet();
+  const qData = set.questions[STATE.qIdx];
+  const total = set.questions.length;
+  const theme = MODULE_THEMES[(set.id - 1) % MODULE_THEMES.length];
+  const quizCard = document.getElementById("quizCard");
+  quizCard.style.setProperty("--accent", theme.accent);
+  quizCard.style.setProperty("--accent-soft", theme.soft);
+  quizCard.style.setProperty("--accent-ink", theme.ink);
+  quizCard.classList.remove("is-correct","is-wrong");
+  quizCard.classList.add("is-changing");
+  window.setTimeout(() => quizCard.classList.remove("is-changing"), 260);
+  document.getElementById("uiScore").textContent = STATE.score;
+  document.getElementById("uiModuleName").textContent = set.title;
+  document.getElementById("uiProgressText").textContent = `${STATE.qIdx + 1} / ${total}`;
+  document.getElementById("uiProgressBar").style.width = `${(STATE.qIdx / total) * 100}%`;
+  document.getElementById("questionLabel").textContent = `Question ${STATE.qIdx + 1}`;
+  
+  const questionText = document.getElementById("questionText");
+  questionText.classList.remove("in-view","mask-ready");
+  setMaskedText(questionText, qData.q, 1);
+  revealObserver.observe(questionText);
+  requestAnimationFrame(() => questionText.classList.add("in-view"));
+  document.getElementById("answerCard").classList.remove("visible");
+  document.getElementById("uiControls").hidden = true;
+  document.getElementById("liveRegion").textContent = `${set.title}, question ${STATE.qIdx + 1} of ${total}`;
+
+  const choices = document.getElementById("uiChoices");
+  choices.innerHTML = "";
+  qData.o.forEach((option, index) => {
+    const button = document.createElement("button");
+    const letter = String.fromCharCode(65 + index);
+    button.type = "button";
+    button.className = "choice-btn";
+    button.innerHTML = `<span class="choice-letter" aria-hidden="true">${letter}</span><span>${option}</span>`;
+    button.addEventListener("click", () => selectAnswer(index, qData));
+    choices.appendChild(button);
+  });
+}
+
+function selectAnswer(selectedIndex, qData){
+  if(STATE.locked) return;
+  STATE.locked = true;
+  const isCorrect = selectedIndex === qData.a;
+  const quizCard = document.getElementById("quizCard");
+  quizCard.classList.remove("is-correct","is-wrong");
+  quizCard.classList.add(isCorrect ? "is-correct" : "is-wrong");
+  if(isCorrect) STATE.score += 1;
+  else STATE.wrong += 1;
+
+  const buttons = Array.from(document.getElementById("uiChoices").children);
+  buttons.forEach((button,index) => {
+    button.disabled = true;
+    if(index === qData.a) button.classList.add("correct");
+    if(index === selectedIndex && !isCorrect) button.classList.add("wrong");
+  });
+
+  const label = document.getElementById("uiBackLabel");
+  label.className = isCorrect ? "answer-status" : "answer-status wrong";
+  label.textContent = isCorrect ? "Correct" : "Not quite";
+  document.getElementById("uiBackAnswer").textContent = qData.o[qData.a];
+  document.getElementById("uiBackExplain").textContent = qData.e;
+  document.getElementById("answerCard").classList.add("visible");
+  document.getElementById("uiControls").hidden = false;
+  document.getElementById("uiScore").textContent = STATE.score;
+  document.getElementById("liveRegion").textContent = isCorrect ? "Correct answer." : `Incorrect. The correct answer is ${qData.o[qData.a]}.`;
+  document.getElementById("btnNext").focus({preventScroll:true});
+}
+
+function nextQuestion(){
+  const set = currentSet();
+  STATE.qIdx += 1;
+  if(STATE.qIdx < set.questions.length) loadQuestion();
+  else endQuiz(set);
+}
+
+function endQuiz(set){
+  const total = set.questions.length;
+  const pct = Math.round((STATE.score / total) * 100);
+  document.getElementById("uiResultPct").textContent = `${pct}%`;
+  document.getElementById("uiResultCorrect").textContent = STATE.score;
+  document.getElementById("uiResultWrong").textContent = STATE.wrong;
+  document.getElementById("resultScore").style.setProperty("--score-angle", `${pct * 3.6}deg`);
+
+  let title = "Keep practising";
+  let msg = "Review the explanations and try the module again when you are ready.";
+  if(pct === 100){
+    title = "Perfect score";
+    msg = "Excellent work. You answered every question correctly.";
+  }else if(pct >= 80){
+    title = "Strong result";
+    msg = "You have a good grasp of this module. A quick review can lock it in.";
+  }else if(pct >= 60){
+    title = "Good progress";
+    msg = "You are getting there. Revisit the explanations and retry the tricky ones.";
+  }
+  document.getElementById("uiResultTitle").textContent = title;
+  const resultTitle = document.getElementById("uiResultTitle");
+  resultTitle.classList.remove("in-view","mask-ready");
+  setMaskedText(resultTitle, title, 1);
+  document.getElementById("uiResultMsg").textContent = msg;
+  navTo("results");
+}
+
+function retrySet(){
+  startQuiz(STATE.setId);
+}
+
+observeReveals();
+</script>
+</body>
+</html>
